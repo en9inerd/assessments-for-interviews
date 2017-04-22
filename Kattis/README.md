@@ -1,3 +1,3 @@
 # Problems
 
-- [Genetic Search](https://open.kattis.com/problems/geneticsearch)
+- Genetic Search: ([description](https://open.kattis.com/problems/geneticsearch)) ([solution](genetic_search.py))
