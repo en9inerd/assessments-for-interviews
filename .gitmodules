@@ -1,0 +1,9 @@
+[submodule "concordance"]
+	path = concordance
+	url = https://github.com/eng1nerd/concordance
+[submodule "powerball-story"]
+	path = powerball-story
+	url = https://github.com/eng1nerd/greenphire-assessment
+[submodule "kata-python"]
+	path = kata-python
+	url = https://github.com/eng1nerd/kata-python
