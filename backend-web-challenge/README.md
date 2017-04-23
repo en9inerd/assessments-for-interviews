@@ -1,10 +1,15 @@
 # #1: Only normal?
 
-## Create a data model that allows you maximize normalization
+> Normalization is a key design technique in database design to minimize the amount of data you have to store in order to get the complete picture of your data model.
+
 > Take this simple model for storing an address: ![alt](db_schema.png)
 
+## Create a data model that allows you maximize normalization
+
 ![alt](diagram.png)
+
 My solution disregards that you can have the same City name in different States.
+
 ```Python
 from django.db import models
 
@@ -42,17 +47,11 @@ For example, as it is implemented in Django, where a template is rendered with a
 - disadvantages normalized model: 
   - Reading the data from many tables will take a performance hit, because increased the numbers of JOINs
 
-## Bonus. If we had to transition a database from using the above model to your model, what are the steps you would take to minimize downtime? Assume that only one web application is accessing this model.
-Steps:
-1. Make backup of database
-2. Prepare changed code of application for new model
-3. Make migration scripts for new model
-4. Stop application
-5. Deploy new code to server
-6. Run migrations
-7. Start application
-
 # #2: A race against the clock
+
+> Some tasks take a lot more time than we want to allow in the HTTP request / response cycle. We love to put things up in our queue using Celery. Unfortunately, this can present an opportunity for race conditions to occur, which are amongst the nastiest issues to debug. This Django model below has a race condition.
+
+> The code you are evaluating is [here](https://gist.github.com/jkatz/01accb709cdf1dfdf9e2149cdc9eb8fc)
 
 ## Identify where the race condition is in the code
 In file `models.py`, Lines 36-37 and 46-47
@@ -87,8 +86,50 @@ connection.on_commit(lambda: send_change_of_zipcode.delay(self.id))
 
 # #3: APIs to the rescue?
 
-[Solution_1](rescue1.py)    [Solution_2](rescue2.py)
+> Here is some example return data from both APIs:
+> **API #1**  
+https://api1.example.com/v1/payments/
+```json
+[
+    {
+        "id": "42d213d2-cdc2-4655-99ec-9335b91c9a8f",
+        "amount": "20.99",
+        "last_4": "1111",
+        "memo": "For the bill"
+    }
+]
+```
+
+> **API #2**  
+https://api2.example.com/v6/order/history/
+```json
+[
+    {
+        "orderID": "32342302010102",
+        "total": "9.99",
+        "last_4": "1111",
+        "description": "Services rendered"
+    }
+]
+```
+> Create a mini-application that provides an API that pulls the data from the above two APIs and returns a unified serialized JSON array of objects with the following keys:
+> - `remote_payment_id`​ - a reference to the payment ID
+> - `total​` - the amount the payment was for
+> - `last_4​` - the last 4 digits of the credit card number used on the payment
+> - `details`​ - a description of what the payment was
+
+> Hints:
+> - More APIs could be added in the future: can you design a modular solution?
+> - You do not need to worry about sort order
+
+[[Solution_1](rescue1.py)]    [[Solution_2](rescue2.py)]
 
 # Bonus: Lists of Lists of Lists of Lists of...
 
-[Solution](bonus.py)
+Lists - they are everywhere! People love putting things in lists, and nesting the lists. In fact, it seems like some people want to nest things in lists ad infinitum! We need to generate HTML that allows us to do this. Given a JSON data structure like [this](https://gist.github.com/jkatz/2432c6d0c88af56e7162).
+
+Architect and/or develop a solution that will generate the following HTML structure (you do not need to match the spacing): [link](https://gist.github.com/jkatz/14dee50d68d2b05aa953)
+
+You can implement this in either Python or Javascript.
+
+[[Solution](bonus.py)]
